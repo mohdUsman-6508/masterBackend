@@ -1,0 +1,16 @@
+{
+  "name": "backendrising",
+  "version": "1.0.0",
+  "description": "journey of becoming a student to a master in backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "dependencies",
+    "javascript",
+    "mongodb"
+  ],
+  "author": "mohammad usman",
+  "license": "ISC"
+}
