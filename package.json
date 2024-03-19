@@ -1,7 +1,7 @@
 {
   "name": "backendrising",
   "version": "1.0.0",
-  "description": "journey of becoming a student to a master in backend",
+  "description": "Journey of transforming a student to a master in backend",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -18,5 +18,10 @@
   "devDependencies": {
     "nodemon": "^3.0.1",
     "prettier": "^3.1.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "mongoose": "^8.2.2"
   }
 }
