@@ -1,12 +1,37 @@
-//nodemon reload karega
 // require("dotenv").config({ path: "./env" });
-
-import mongoose from "mongoose";
-import express from "express";
-import { DB_NAME } from "./constants.js";
+import express, { urlencoded } from "express";
 import connectToDatabase from "./db/index.js";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-connectToDatabase();
+const app = express();
 
-console.log(process.env.MONGODB_URI);
-console.log(DB_NAME);
+///middlewares for best communication
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  })
+);
+
+app.use(express.json({ limit: "16kb" }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "16kb",
+  })
+);
+app.use(express.static("public"));
+app.use(cookieParser());
+//////////////////////////////
+
+//after connecting to DB, listening
+connectToDatabase()
+  .then(() => {
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`Listening at PORT: ${process.env.PORT || 8000}`);
+    });
+  })
+  .catch((err) => {
+    console.log("DB connection err: ", err);
+  });
