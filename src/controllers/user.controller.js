@@ -1,17 +1,31 @@
 import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import { User } from "../models/user.models.js";
 
 const registerUser = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    message: "A+ code",
+  //get user details from frontend
+  const { username, email, password } = req.body;
+  console.log(username, email);
+
+  if (username === "" || email === "" || password === "") {
+    throw new ApiError(400, "All fields are required!");
+  }
+  // if ([username, email, password].some((field) => field?.trim === "")) {
+  //   throw new ApiError(400, "All fields are required!");
+  // } // more advance code for above same logic
+  const existedUser = await User.findOne({
+    $or: [{ username }, { email }],
   });
+
+  if (existedUser) {
+    throw new ApiError(
+      409,
+      "User with this username or email already exist!!!"
+    );
+  }
 });
 
-const user = asyncHandler(async (req, res) => {
-  res.status(201).json({
-    success: true,
-    message: "user",
-  });
-});
+export { registerUser };
 
 // Another way of writing above controller
 
@@ -27,5 +41,9 @@ const user = asyncHandler(async (req, res) => {
 //     });
 //   }
 // };
-
-export { registerUser, user };
+// const user = asyncHandler(async (req, res) => {
+//   res.status(201).json({
+//     success: true,
+//     message: "user",
+//   });
+// });
