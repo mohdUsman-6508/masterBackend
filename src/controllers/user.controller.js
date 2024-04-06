@@ -88,6 +88,81 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "User Registered successfully"));
 });
 
+/// is method ki jarurat bahut baar padne wali hai
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({
+      validateBeforeSave: false,
+    });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(500, "Something went wrong,tokens not generated!");
+  }
+};
+
+const loginUser = asyncHandler(async (req, res) => {
+  //req.body se data lo
+  //username or email
+  //find the user
+  //password check
+  //access and refresh token
+  //send cookie
+
+  const { username, password, email } = req.body;
+
+  if (!(username || email)) {
+    throw new ApiError(400, "username or email is required!");
+  }
+
+  const validUser = await User.findOne({
+    $or: [{ username }, { email }],
+  });
+
+  if (!validUser) {
+    throw new ApiError(404, "User not found!");
+  }
+
+  const validPassword = await validUser.isPasswordCorrect(password);
+  if (!validPassword) {
+    throw new ApiError(401, "Invalid Credentials!");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+    validUser._id
+  );
+
+  const loggedInUser = await User.findById(validUser._id).select(
+    "-password -refreshToken"
+  ); //optional step do if calling db is not expensive operation
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+    //sirf server se he modifieable he
+  };
+  res
+    .cookie("Token_:", accessToken, options)
+    .cookie("refreshToken_:", refreshToken, options)
+    .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User logged in successfully:)"
+      )
+    );
+});
+
 export { registerUser };
 
 // Another way of writing above controller
