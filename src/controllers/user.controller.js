@@ -163,7 +163,7 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser };
+export { registerUser, loginUser };
 
 // Another way of writing above controller
 
