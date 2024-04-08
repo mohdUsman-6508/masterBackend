@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
 
 ///password ke regarding hooks hum istemal kar rahe hain jaise- password ko store karane se pehle use hash kar rahe he , aur password ka validation bhi
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next(); //TODO: ERROR DE RAHA HAI
+  if (!this.isModified("password")) return next(); //TODO: ERROR de raha tha ab solve ho gya
   this.password = await bcrypt.hash(this.password, 10);
   next();
 }); // this is a pre hook to hash the password from plain text
