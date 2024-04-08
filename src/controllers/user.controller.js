@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.models.js";
 import upload from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import bcrypt from "bcrypt";
 
 /// a very advance and professional way of making a controller
 
@@ -115,7 +116,6 @@ const loginUser = asyncHandler(async (req, res) => {
   //send cookie
 
   const { username, password, email } = req.body;
-
   if (!(username || email)) {
     throw new ApiError(400, "username or email is required!");
   }
@@ -129,6 +129,8 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const validPassword = await validUser.isPasswordCorrect(password);
+  // const validPassword = await bcrypt.compare(password, validUser.password);
+
   if (!validPassword) {
     throw new ApiError(401, "Invalid Credentials!");
   }
@@ -167,8 +169,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     { new: true }
