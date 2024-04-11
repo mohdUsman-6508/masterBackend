@@ -5,6 +5,11 @@ import {
   loginUser,
   logoutUser,
   refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  updateAccountDetails,
+  updateCurrentAvatar,
+  updateCurrentCoverImage,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -32,5 +37,12 @@ router.route("/login").post(loginUser);
 
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);
+
+//TODO: Postman API testing
+router.route("/change-passoword").post(changeCurrentPassword);
+router.route("/get-current-user").get(getCurrentUser);
+router.route("/update-account-details").post(updateAccountDetails);
+router.route("/update-avatar").post(updateCurrentAvatar);
+router.route("/update-coverimage").post(updateCurrentCoverImage);
 
 export default router;
