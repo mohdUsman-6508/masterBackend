@@ -351,6 +351,84 @@ const updateCurrentCoverImage = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse(201, updatedUser, "Cover image updated"));
 });
 
+// aggregation pipelines --> a bit advance topic
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  const { username } = req?.params;
+  if (!username?.trim()) {
+    throw new ApiError(401, "username does not exist!");
+  }
+
+  //aggretion pipeline
+  const channel = await User.aggregate([
+    {
+      //1 document find karliya stage I me
+      $match: {
+        username: username?.toLowerCase(),
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions", //model Subscription--> subscriptons in db
+        $localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        $localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        //fields fo add kara rhe he document me iske baad project karenge
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo",
+        },
+
+        //subscribed he ya nahin uske liye calc
+
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      //jo jo select karunga wahi dena
+      $project: {
+        fullName: 1,
+        username: 1,
+        email: 1,
+        avatar: 1,
+        coverImage: 1,
+        isSubscribed: 1,
+        channelsSubscribedToCount: 1,
+      },
+    },
+  ]); //array return ho raha
+
+  if (!channel?.length) {
+    throw new ApiError(401, "channel not found!");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, channel[0], "Users Channel fetched successfully!")
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -361,6 +439,7 @@ export {
   updateAccountDetails,
   updateCurrentAvatar,
   updateCurrentCoverImage,
+  getUserChannelProfile,
 };
 
 // Another way of writing above controller
