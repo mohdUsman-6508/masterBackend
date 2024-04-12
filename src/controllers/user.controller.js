@@ -429,6 +429,61 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     );
 });
 
+const getUserWatchHistory = asyncHandler(async (req, res) => {
+  // req.user._id--> (ObjectId ko convert karna padega) -->se hame milega ek string, isse hum id lenge mongoose ka istemal karke
+  // pipeline se data directly jata he mongodb ke pass mongoose bhayye ke through nahin jata
+
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.TypeObjectId(req.user._id),
+      },
+    },
+    {
+      //yahan par hamare pass bahut sare videos aa gye he
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        //subpipeline
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    avatar: 1,
+                    username: 1,
+                  },
+                },
+              ],
+            },
+            //frontend ki sahuliyat ke liye
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+
+            //yahan owner ke andar user ka sara data aagya he lekin hume specific data chahiye to hum yahan aur subpipeline lagayenge
+          },
+        ],
+      },
+      //yahan par subpipeline lagani padegi warna owners ka kuch nhin milega
+    },
+  ]);
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, user[0].watchHistory, "Watch history fetched!"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -440,6 +495,7 @@ export {
   updateCurrentAvatar,
   updateCurrentCoverImage,
   getUserChannelProfile,
+  getUserWatchHistory,
 };
 
 // Another way of writing above controller

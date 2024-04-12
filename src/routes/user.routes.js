@@ -10,6 +10,8 @@ import {
   updateAccountDetails,
   updateCurrentAvatar,
   updateCurrentCoverImage,
+  getUserChannelProfile,
+  getUserWatchHistory,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -39,10 +41,17 @@ router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);
 
 //TODO: Postman API testing
-router.route("/change-passoword").post(changeCurrentPassword);
-router.route("/get-current-user").get(getCurrentUser);
-router.route("/update-account-details").post(updateAccountDetails);
-router.route("/update-avatar").post(updateCurrentAvatar);
-router.route("/update-coverimage").post(updateCurrentCoverImage);
+router.route("/change-passoword").post(verifyJWT, changeCurrentPassword);
+router.route("/getCurrentUser").get(verifyJWT, getCurrentUser);
+router.route("/update-accountDetails").patch(verifyJWT, updateAccountDetails);
+router
+  .route("/update-avatar")
+  .patch(verifyJWT, upload.single("avatar"), updateCurrentAvatar);
+router
+  .route("/update-coverimage")
+  .patch(verifyJWT, upload.single("coverImage"), updateCurrentCoverImage);
+
+router.route("/channel/:username").get(verifyJWT, getUserChannelProfile);
+router.route("/watchHistory").get(verifyJWT, getUserWatchHistory);
 
 export default router;
